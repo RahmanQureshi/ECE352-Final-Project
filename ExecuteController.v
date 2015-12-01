@@ -10,9 +10,10 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 
 	input	N, Z;
 	input	reset, clock;
+	input RFWrite;
 	input [7:0] IR1Out, IR2Out, IR3Out, IR4Out;
 	output	PCSel, PCwrite, AddrSel, MemRead, MemWrite, IRload, R1Sel, MDRload;
-	output	R1R2Load, ALUOutWrite, RFWrite, RegIn, FlagWrite;
+	output	R1R2Load, ALUOutWrite, RegIn, FlagWrite;
 	output  CounterEnable;
 	output	[2:0] ALU1, ALU2, ALUop;
 	output reg OutputSel;
@@ -20,7 +21,7 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 	
 	reg 	PCSel;
 	reg	PCwrite, AddrSel, MemRead, MemWrite, IRload, R1Sel, MDRload, CounterEnable;
-	reg	R1R2Load, ALUOutWrite, RFWrite, RegIn, FlagWrite;
+	reg	R1R2Load, ALUOutWrite, RegIn, FlagWrite;
 	reg	[2:0] ALU1, ALU2, ALUop;
 	reg [3:0] state;
 	reg [3:0] instr;
@@ -66,28 +67,43 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 		case(state)
 			c3_asn:
 				begin
-				if(IR4Out[7:6]==IR3Out[7:6]) ALU1 = 0;
+				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
-				if(IR4Out[7:6]==IR3Out[5:4]) ALU2 = 3'b001;
+				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite == 1) ALU2 = 3'b001;
 				else ALU2 = 3'b000;
 				end
 			c3_shift: // R2 unused
 				begin
 				ALU2 = 4; // IMM3
-				if(IR4Out[7:6]==IR3Out[7:6]) ALU1 = 0;
+				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
 				end
 			c3_ori:
 				begin
 				ALU2 = 3; // imm5
-				if(IR4Out[7:6]==1) ALU1 = 0;
+				if(IR4Out[7:6]==1 && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
 				end
 			c3_load:
 				begin
 				ALU1 = 2; // don't care
-				if(IR4Out[7:6]==IR3Out[7:6]) ALU2 = 3'b001;
+				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU2 = 3'b001;
 				else ALU2 = 3'b000;
+				end
+			c3_bpz:
+				begin
+				ALU1 = 1; // PC4 wire
+				ALU2 = 2; // IMM4
+				end
+			c3_bz:
+				begin
+				ALU1 = 1; // PC4 wire
+				ALU2 = 2; // IMM4
+				end
+			c3_bnz:
+				begin
+				ALU1 = 1; // PC4 wire
+				ALU2 = 2; // IMM4
 				end
 			default:
 				begin
@@ -140,7 +156,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 								R1R2Load = 0;
 								ALUop = 3'b000;
 								ALUOutWrite = 1;
-								RFWrite = 0;
 								RegIn = 0;
 								FlagWrite = 1;
 								CounterEnable = 1;
@@ -160,7 +175,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 								R1R2Load = 0;
 								ALUop = 3'b001;
 								ALUOutWrite = 1;
-								RFWrite = 0;
 								RegIn = 0;
 								FlagWrite = 1;
 								CounterEnable = 1;
@@ -180,7 +194,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 								R1R2Load = 0;
 								ALUop = 3'b011;
 								ALUOutWrite = 1;
-								RFWrite = 0;
 								RegIn = 0;
 								FlagWrite = 1;
 								CounterEnable = 1;
@@ -200,7 +213,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b100;
 					ALUOutWrite = 1;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 1;
 					CounterEnable = 1;
@@ -219,7 +231,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b010;
 					ALUOutWrite = 1;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 1;
 					CounterEnable = 1;
@@ -238,7 +249,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b000;
 					ALUOutWrite = 0;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 0;
 					CounterEnable = 1;
@@ -257,7 +267,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b000;
 					ALUOutWrite = 0;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 0;
 					CounterEnable = 1;
@@ -276,7 +285,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b000;
 					ALUOutWrite = 0;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 0;
 					CounterEnable = 1;
@@ -295,7 +303,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b000;
 					ALUOutWrite = 0;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 0;
 					CounterEnable = 1;
@@ -314,7 +321,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b000;
 					ALUOutWrite = 0;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 0;
 					CounterEnable = 1;
@@ -333,7 +339,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b000;
 					ALUOutWrite = 0;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 0;
 					CounterEnable = 0;
@@ -352,7 +357,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 					R1R2Load = 0;
 					ALUop = 3'b000;
 					ALUOutWrite = 0;
-					RFWrite = 0;
 					RegIn = 0;
 					FlagWrite = 0;
 					CounterEnable = 1;

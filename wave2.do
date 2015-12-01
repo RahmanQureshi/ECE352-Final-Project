@@ -7,7 +7,6 @@ add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in0
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in1
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in2
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in3
-
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ClockCounter/q
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/PC/q
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/PC2/q
@@ -21,10 +20,14 @@ add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU/in1
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU/in2
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU/out 
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALUOut_reg/q
+add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/R1Mux/sel 
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/R1/q
+add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/R2Mux/sel
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/R2/q 
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/MDR_reg/q
+add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU1_mux/sel
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU/in1
+add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU2_mux/sel  
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU/in2
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU/ALUOp
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ALU/out 

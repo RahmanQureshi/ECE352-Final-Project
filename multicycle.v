@@ -121,7 +121,7 @@ DecodeController DC
 
 RFController RFC
 (
-	.reset(reset),.clock(clock),.IR1Out(IR),.IR2Out(IR2Out),.IR3Out(IR3Out),.IR4Out(IR4Out),
+	.reset(reset),.clock(clock),.IR1Out(IR),.IR2Out(IR2Out),.IR3Out(IR3Out),.IR4Out(IR4Out),.RFWrite(RFWrite),
 	.IRLoad(IR3Load),.R1Sel(R1Sel),.R1R2Load(R1R2Load),.FlagWrite(),.R1MuxSel(R1MuxSel),.R2MuxSel(R2MuxSel)
 );
 
@@ -129,7 +129,7 @@ ExecuteController	EC(
 	.reset(reset),.clock(clock),.N(N),.Z(Z),.IR1Out(IR),.IR2Out(IR2Out),.IR3Out(IR3Out),.IR4Out(IR4Out),
 	.PCwrite(),.AddrSel(),.MemRead(MemRead),.PCSel(PCSel),.MemWrite(MemWrite),
 	.IRload(IR4Load),.R1Sel(),.MDRload(MDRLoad),.R1R2Load(),
-	.ALU1(ALU1),.ALUOutWrite(ALUOutWrite),.RFWrite(),.RegIn(),
+	.ALU1(ALU1),.ALUOutWrite(ALUOutWrite),.RFWrite(RFWrite),.RegIn(),
 	.FlagWrite(FlagWrite),.ALU2(ALU2),.ALUop(ALUOp),.CounterEnable(CounterEnable),.OutputSel(OutputSel)
 );
 

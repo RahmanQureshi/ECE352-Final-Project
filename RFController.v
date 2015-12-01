@@ -1,10 +1,11 @@
 module RFController
 (
-reset, IR1Out, IR2Out, IR3Out, IR4Out, clock,
+reset, IR1Out, IR2Out, IR3Out, IR4Out, clock, RFWrite,
 IRLoad, R1R2Load, R1Sel, FlagWrite,
 R1MuxSel, R2MuxSel
 );
-
+	
+	input RFWrite;
 	input	reset, clock;
 	input [7:0] IR1Out, IR2Out, IR3Out, IR4Out;
 	output	R1R2Load, IRLoad, R1Sel;
@@ -75,7 +76,7 @@ R1MuxSel, R2MuxSel
 				if(IR2Out[7:6] == 1) R1MuxSel = 0;
 				else R1MuxSel = 2;
 				if(IR2Out[5:4] == 1) R2MuxSel = 0;
-				else R2MuxSel = 2; // don't care
+				else R2MuxSel = 2;
 				end
 			c3_load:
 				begin
