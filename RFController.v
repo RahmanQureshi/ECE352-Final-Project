@@ -57,7 +57,7 @@ R1MuxSel, R2MuxSel
 	
 	always @(*)
 	begin
-		case(state2)
+		case(state2) // this can probably be simplified but leaving for now b/c it works
 			c3_asn:
 				begin
 				if(IR2Out[7:6] == IR4Out[7:6]) R1MuxSel = 0;
@@ -81,7 +81,8 @@ R1MuxSel, R2MuxSel
 				end
 			c3_load:
 				begin
-				R1MuxSel = 2; // don't care
+				if(IR2Out[7:6] == 1) R1MuxSel = 0;
+				else R1MuxSel = 2;
 				if(IR2Out[5:4] == IR4Out[7:6]) R2MuxSel = 1; // MDR Output
 				else R2MuxSel = 2;
 				end
