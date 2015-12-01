@@ -27,6 +27,9 @@ MemAdrMuxSel, MemDataInMuxSel
 	reg [3:0] state;
 	reg [3:0] instr;
 
+	reg [3:0] state2; // IR4 - WriteBack
+	reg [3:0] instr2;
+	
 /*****************************************************************************
  *                         Parameter Declarations                            *
  *****************************************************************************/
@@ -40,8 +43,7 @@ MemAdrMuxSel, MemDataInMuxSel
 /*****************************************************************************
  *                         Combination Logic  - Data Hazard                  *
  *****************************************************************************/	
-
-	
+		
 	always @(*)
 	begin
 		case(state)
@@ -49,19 +51,34 @@ MemAdrMuxSel, MemDataInMuxSel
 				begin
 				MemAdrMuxSel = 0;
 				MemDataInMuxSel = 0;
-				// branching ==0 e.g. the instruction isn't being disregarded
-				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite==1 && branching==0) ALU1 = 0;
-				else ALU1 = 2;
-				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite==1 && branching==0) ALU2 = 3'b001;
-				else ALU2 = 3'b000;
+				if(state2==c3_ori) // For ori, upper two bits are not the register being written
+					begin
+					if(IR3Out[7:6]==1 && RFWrite==1 && branching==0) ALU1 = 0;
+					else ALU1 = 2;
+					if(IR3Out[5:4]==1 && RFWrite==1 && branching==0) ALU2 = 1;
+					else ALU2 = 0;
+					end
+				else
+					begin
+					if(IR4Out[7:6]==IR3Out[7:6] && RFWrite==1 && branching==0) ALU1 = 0;
+					else ALU1 = 2;
+					if(IR4Out[7:6]==IR3Out[5:4] && RFWrite==1 && branching==0) ALU2 = 3'b001;
+					else ALU2 = 3'b000;
+					end
 				end
-			c3_shift: // R2 unused
+			c3_shift:
 				begin
 				MemAdrMuxSel = 0;
 				MemDataInMuxSel = 0;
 				ALU2 = 4; // IMM3
-				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite==1 && branching==0) ALU1 = 0;
-				else ALU1 = 2;
+				if(state2==c3_ori)
+					begin
+					if(IR3Out[7:6]==1 && RFWrite==1 && branching==0) ALU1 = 0;
+					else ALU1 = 2;
+					end
+				else
+					if(IR4Out[7:6]==IR3Out[7:6] && RFWrite==1 && branching==0) ALU1 = 0;
+					else ALU1 = 2;
 				end
 			c3_ori:
 				begin
@@ -76,8 +93,14 @@ MemAdrMuxSel, MemDataInMuxSel
 				MemDataInMuxSel = 0;
 				ALU1 = 2; // don't care
 				ALU2 = 3'b000; // don't care
-				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
-				else MemAdrMuxSel = 0;
+				if(state2==c3_ori) // For ori, upper two bits are not the register being written
+					begin
+					if(IR3Out[5:4]==1 && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
+					else MemAdrMuxSel = 0;
+					end
+				else
+					if(IR4Out[7:6]==IR3Out[5:4] && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
+					else MemAdrMuxSel = 0;
 				end
 			c3_bpz:
 				begin
@@ -104,10 +127,21 @@ MemAdrMuxSel, MemDataInMuxSel
 				begin
 				ALU1 = 2; // don't care
 				ALU2 = 0; // don't care
-				if(IR4Out[7:6] == IR3Out[7:6] && RFWrite==1 && branching==0) MemDataInMuxSel = 1;
-				else MemDataInMuxSel = 0;
-				if(IR4Out[7:6] == IR3Out[5:4] && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
-				else MemAdrMuxSel = 0;
+				
+				if(state2==c3_ori) // For ori, upper two bits are not the register being written
+					begin
+					if(IR3Out[7:6]==1 && RFWrite==1 && branching==0) MemDataInMuxSel = 1;
+					else MemDataInMuxSel = 0;
+					if(IR3Out[5:4]==1 && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
+					else MemAdrMuxSel = 0;
+					end
+				else
+					begin
+					if(IR4Out[7:6] == IR3Out[7:6] && RFWrite==1 && branching==0) MemDataInMuxSel = 1;
+					else MemDataInMuxSel = 0;
+					if(IR4Out[7:6] == IR3Out[5:4] && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
+					else MemAdrMuxSel = 0;
+					end
 				end
 			default:
 				begin
@@ -141,6 +175,26 @@ MemAdrMuxSel, MemDataInMuxSel
 		else if( instr == 4'b1010 ) state = c1; // nop
 		else if( instr == 4'b0001 ) state = stop;
 		else state = 0;
+	end
+	
+	always@(*)
+	begin
+		instr2 = IR4Out[3:0];
+	end
+ 
+	always@(*)
+	begin	
+		if(instr2 == 4'b0100 | instr2 == 4'b0110 | instr2 == 4'b1000) state2 = c3_asn;
+		else if( instr2[2:0] == 3'b011 ) state2 = c3_shift;
+		else if( instr2[2:0] == 3'b111 ) state2 = c3_ori;
+		else if( instr2 == 4'b0000 ) state2 = c3_load;
+		else if( instr2 == 4'b0010 ) state2 = c3_store;
+		else if( instr2 == 4'b1101 ) state2 = c3_bpz;
+		else if( instr2 == 4'b0101 ) state2 = c3_bz;
+		else if( instr2 == 4'b1001 ) state2 = c3_bnz;
+		else if( instr2 == 4'b1010 ) state2 = c1; // nop
+		else if( instr2 == 4'b0001 ) state2 = stop;
+		else state2 = 0;
 	end
 	
 	always@(*)
