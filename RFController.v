@@ -1,11 +1,11 @@
 module RFController
 (
-reset, IR1Out, IR2Out, IR3Out, IR4Out, clock, RFWrite,
+reset, IR1Out, IR2Out, IR3Out, IR4Out, clock, RFWrite, branching,
 IRLoad, R1R2Load, R1Sel, FlagWrite,
 R1MuxSel, R2MuxSel
 );
 	
-	input RFWrite;
+	input RFWrite, branching;
 	input	reset, clock;
 	input [7:0] IR1Out, IR2Out, IR3Out, IR4Out;
 	output	R1R2Load, IRLoad, R1Sel;
@@ -60,30 +60,31 @@ R1MuxSel, R2MuxSel
 		case(state2) // this can probably be simplified but leaving for now b/c it works
 			c3_asn:
 				begin
-				if(IR2Out[7:6] == IR4Out[7:6]) R1MuxSel = 0;
+				if(IR2Out[7:6] == IR4Out[7:6] && branching==0) R1MuxSel = 0;
 				else R1MuxSel = 2;
-				if(IR2Out[5:4] == IR4Out[7:6]) R2MuxSel = 0;
+				if(IR2Out[5:4] == IR4Out[7:6] && branching==0) R2MuxSel = 0;
 				else R2MuxSel = 2;
 				end
 			c3_shift: // R2 unused
 				begin
-				if(IR2Out[7:6] == IR4Out[7:6]) R1MuxSel = 0;
+				if(IR2Out[7:6] == IR4Out[7:6] && branching==0) R1MuxSel = 0;
 				else R1MuxSel = 2;
-				if(IR2Out[5:4] == IR4Out[7:6]) R2MuxSel = 0;
+				if(IR2Out[5:4] == IR4Out[7:6] && branching==0) R2MuxSel = 0;
 				else R2MuxSel = 2;
 				end
 			c3_ori:
 				begin
-				if(IR2Out[7:6] == 1) R1MuxSel = 0;
+				if(IR2Out[7:6] == 1 && branching==0) R1MuxSel = 0;
 				else R1MuxSel = 2;
-				if(IR2Out[5:4] == 1) R2MuxSel = 0;
+				if(IR2Out[5:4] == 1 && branching==0) R2MuxSel = 0;
 				else R2MuxSel = 2;
 				end
 			c3_load:
 				begin
-				if(IR2Out[7:6] == 1) R1MuxSel = 0;
+				// if(IR2Out[7:6] == 1 && branching==0) R1MuxSel = 0;
+				if(IR2Out[7:6] == IR4Out[7:6] && branching==0) R1MuxSel = 0;
 				else R1MuxSel = 2;
-				if(IR2Out[5:4] == IR4Out[7:6]) R2MuxSel = 1; // MDR Output
+				if(IR2Out[5:4] == IR4Out[7:6] && branching==0) R2MuxSel = 1; // MDR Output
 				else R2MuxSel = 2;
 				end
 			default:

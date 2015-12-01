@@ -7,6 +7,7 @@ add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in0
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in1
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in2
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/HEX_display/in3
+add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/BFSM/branching 
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/ClockCounter/q
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/PC/q
 add wave -noupdate -radix hexadecimal /multicycle_tb/DUT/PC2/q

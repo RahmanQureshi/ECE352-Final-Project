@@ -1,17 +1,17 @@
 module ExecuteController
 (
 reset, IR1Out, IR2Out, IR3Out, IR4Out, clock,
-N, Z,
+N, Z, RFWrite, branching,
 PCwrite, AddrSel, MemRead, PCSel,
 MemWrite, IRload, R1Sel, MDRload,
 R1R2Load, ALU1, ALU2, ALUop,
-ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, 
+ALUOutWrite, RegIn, FlagWrite, CounterEnable, OutputSel, 
 MemAdrMuxSel, MemDataInMuxSel
 );
 
 	input	N, Z;
 	input	reset, clock;
-	input RFWrite;
+	input RFWrite, branching;
 	input [7:0] IR1Out, IR2Out, IR3Out, IR4Out;
 	output	PCSel, PCwrite, AddrSel, MemRead, MemWrite, IRload, R1Sel, MDRload;
 	output	R1R2Load, ALUOutWrite, RegIn, FlagWrite;
@@ -49,9 +49,10 @@ MemAdrMuxSel, MemDataInMuxSel
 				begin
 				MemAdrMuxSel = 0;
 				MemDataInMuxSel = 0;
-				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
+				// branching ==0 e.g. the instruction isn't being disregarded
+				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite==1 && branching==0) ALU1 = 0;
 				else ALU1 = 2;
-				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite == 1) ALU2 = 3'b001;
+				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite==1 && branching==0) ALU2 = 3'b001;
 				else ALU2 = 3'b000;
 				end
 			c3_shift: // R2 unused
@@ -59,7 +60,7 @@ MemAdrMuxSel, MemDataInMuxSel
 				MemAdrMuxSel = 0;
 				MemDataInMuxSel = 0;
 				ALU2 = 4; // IMM3
-				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
+				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite==1 && branching==0) ALU1 = 0;
 				else ALU1 = 2;
 				end
 			c3_ori:
@@ -67,7 +68,7 @@ MemAdrMuxSel, MemDataInMuxSel
 				MemAdrMuxSel = 0;
 				MemDataInMuxSel = 0;
 				ALU2 = 3; // imm5
-				if(IR4Out[7:6]==1 && RFWrite == 1) ALU1 = 0;
+				if(IR4Out[7:6]==1 && RFWrite==1 && branching==0) ALU1 = 0;
 				else ALU1 = 2;
 				end
 			c3_load:
@@ -75,7 +76,7 @@ MemAdrMuxSel, MemDataInMuxSel
 				MemDataInMuxSel = 0;
 				ALU1 = 2; // don't care
 				ALU2 = 3'b000; // don't care
-				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite == 1) MemAdrMuxSel = 1;
+				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
 				else MemAdrMuxSel = 0;
 				end
 			c3_bpz:
@@ -103,9 +104,9 @@ MemAdrMuxSel, MemDataInMuxSel
 				begin
 				ALU1 = 2; // don't care
 				ALU2 = 0; // don't care
-				if(IR4Out[7:6] == IR3Out[7:6] && RFWrite == 1) MemDataInMuxSel = 1;
+				if(IR4Out[7:6] == IR3Out[7:6] && RFWrite==1 && branching==0) MemDataInMuxSel = 1;
 				else MemDataInMuxSel = 0;
-				if(IR4Out[7:6] == IR3Out[5:4] && RFWrite == 1) MemAdrMuxSel = 1;
+				if(IR4Out[7:6] == IR3Out[5:4] && RFWrite==1 && branching==0) MemAdrMuxSel = 1;
 				else MemAdrMuxSel = 0;
 				end
 			default:

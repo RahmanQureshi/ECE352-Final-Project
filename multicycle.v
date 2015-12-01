@@ -72,7 +72,9 @@ wire MemAdrMuxSel;
 wire [7:0] MemDataInMuxOut;
 wire MemDataInMuxSel;
 wire branching;
-
+wire RFWriteMuxOut;
+wire MemWriteMuxOut;
+wire FlagWriteMuxOut;
 wire OutputSel;
 
 // ------------------------ Input Assignment ------------------------ //
@@ -127,12 +129,12 @@ DecodeController DC
 
 RFController RFC
 (
-	.reset(reset),.clock(clock),.IR1Out(IR),.IR2Out(IR2Out),.IR3Out(IR3Out),.IR4Out(IR4Out),.RFWrite(RFWrite),
+	.reset(reset),.clock(clock),.branching(branching),.IR1Out(IR),.IR2Out(IR2Out),.IR3Out(IR3Out),.IR4Out(IR4Out),.RFWrite(RFWrite),
 	.IRLoad(IR3Load),.R1Sel(R1Sel),.R1R2Load(R1R2Load),.FlagWrite(),.R1MuxSel(R1MuxSel),.R2MuxSel(R2MuxSel)
 );
 
 ExecuteController	EC(
-	.reset(reset),.clock(clock),.N(N),.Z(Z),.IR1Out(IR),.IR2Out(IR2Out),.IR3Out(IR3Out),.IR4Out(IR4Out),
+	.reset(reset),.clock(clock),.N(N),.Z(Z),.branching(branching),.IR1Out(IR),.IR2Out(IR2Out),.IR3Out(IR3Out),.IR4Out(IR4Out),
 	.PCwrite(),.AddrSel(),.MemRead(MemRead),.PCSel(PCSel),.MemWrite(MemWrite),
 	.IRload(IR4Load),.R1Sel(),.MDRload(MDRLoad),.R1R2Load(),
 	.ALU1(ALU1),.ALUOutWrite(ALUOutWrite),.RFWrite(RFWrite),.RegIn(),
@@ -157,7 +159,7 @@ counter ClockCounter (
 );
 
 memory	DataMem(
-	.MemRead(MemRead),.wren(MemWrite),.clock(clock),
+	.MemRead(MemRead),.wren(MemWriteMuxOut),.clock(clock),
 	.address(MemAdrMuxOut),.address_pc(PCwire),.data(MemDataInMuxOut),.q(MEMwire),.q_pc(INSTRWire)
 );
 
@@ -180,7 +182,7 @@ ALU		BRANCHALU(
 
 
 RF		RF_block(
-	.clock(clock),.reset(reset),.RFWrite(RFWrite),
+	.clock(clock),.reset(reset),.RFWrite(RFWriteMuxOut),
 	.dataw(RegWire),.reg1(R1_in),.reg2(IR2Out[5:4]),
 	.regw(regwIn),.data1(RFout1wire),.data2(RFout2wire),
 	.r0(reg0),.r1(reg1),.r2(reg2),.r3(reg3)
@@ -306,6 +308,20 @@ mux5to1_8bit ALU2_mux(
 	.data3x(ZE5wire),.data4x(ZE3wire),.sel(ALU2),.result(ALU2wire)
 );
 
+mux2to1_2bit		RFWriteMux(
+	.data0x(RFWrite),.data1x(1'b0),
+	.sel(branching),.result(RFWriteMuxOut)
+);
+
+mux2to1_2bit		MemWriteMux(
+	.data0x(MemWrite),.data1x(1'b0),
+	.sel(branching),.result(MemWriteMuxOut)
+);
+
+mux2to1_2bit		FlagWriteMux(
+	.data0x(FlagWrite),.data1x(1'b0),
+	.sel(branching),.result(FlagWriteMuxOut)
+);
 
 sExtend		SE4(.in(IR3Out[7:4]),.out(SE4wire));
 zExtend		ZE3(.in(IR3Out[5:3]),.out(ZE3wire));
@@ -323,7 +339,7 @@ if (reset)
 	Z <= 0;
 	end
 else
-if (FlagWrite)
+if (FlagWriteMuxOut)
 	begin
 	N <= Nwire;
 	Z <= Zwire;

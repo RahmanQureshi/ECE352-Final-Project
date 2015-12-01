@@ -16,7 +16,7 @@ reg branching;
  *****************************************************************************/
  
 reg state;
-reg [1:0] counter;
+reg [2:0] counter;
 
 always@(posedge clock)
 	begin
