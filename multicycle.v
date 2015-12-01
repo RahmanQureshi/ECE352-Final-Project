@@ -69,6 +69,9 @@ wire [2:0] R2MuxSel;
 wire [7:0] mdr_alu_mux_out;
 wire [7:0] MemAdrMuxOut;
 wire MemAdrMuxSel;
+wire [7:0] MemDataInMuxOut;
+wire MemDataInMuxSel;
+
 
 wire OutputSel;
 
@@ -134,7 +137,7 @@ ExecuteController	EC(
 	.IRload(IR4Load),.R1Sel(),.MDRload(MDRLoad),.R1R2Load(),
 	.ALU1(ALU1),.ALUOutWrite(ALUOutWrite),.RFWrite(RFWrite),.RegIn(),
 	.FlagWrite(FlagWrite),.ALU2(ALU2),.ALUop(ALUOp),.CounterEnable(CounterEnable),.OutputSel(OutputSel),
-	.MemAdrMuxSel(MemAdrMuxSel)
+	.MemAdrMuxSel(MemAdrMuxSel),.MemDataInMuxSel(MemDataInMuxSel)
 );
 
 WriteBackController WBC(
@@ -152,7 +155,7 @@ counter ClockCounter (
 
 memory	DataMem(
 	.MemRead(MemRead),.wren(MemWrite),.clock(clock),
-	.address(MemAdrMuxOut),.address_pc(PCwire),.data(R1wire),.q(MEMwire),.q_pc(INSTRWire)
+	.address(MemAdrMuxOut),.address_pc(PCwire),.data(MemDataInMuxOut),.q(MEMwire),.q_pc(INSTRWire)
 );
 
 ALU		ALU(
@@ -273,6 +276,11 @@ mux2to1_8bit 		AddrSel_mux(
 mux2to1_8bit 		RegMux(
 	.data0x(ALUOut),.data1x(MDRwire),
 	.sel(RegIn),.result(RegWire)
+);
+
+mux2to1_8bit 		MemDataInMux(
+	.data0x(R1wire),.data1x(ALUOut),
+	.sel(MemDataInMuxSel),.result(MemDataInMuxOut)
 );
 
 mux2to1_8bit 		MemAdrMux(

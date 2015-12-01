@@ -5,7 +5,8 @@ N, Z,
 PCwrite, AddrSel, MemRead, PCSel,
 MemWrite, IRload, R1Sel, MDRload,
 R1R2Load, ALU1, ALU2, ALUop,
-ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
+ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, 
+MemAdrMuxSel, MemDataInMuxSel
 );
 
 	input	N, Z;
@@ -16,7 +17,7 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
 	output	R1R2Load, ALUOutWrite, RegIn, FlagWrite;
 	output  CounterEnable;
 	output	[2:0] ALU1, ALU2, ALUop;
-	output reg OutputSel, MemAdrMuxSel;
+	output reg OutputSel, MemAdrMuxSel, MemDataInMuxSel;
 	//output	[3:0] state;
 	
 	reg 	PCSel;
@@ -47,6 +48,7 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
 			c3_asn:
 				begin
 				MemAdrMuxSel = 0;
+				MemDataInMuxSel = 0;
 				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
 				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite == 1) ALU2 = 3'b001;
@@ -55,6 +57,7 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
 			c3_shift: // R2 unused
 				begin
 				MemAdrMuxSel = 0;
+				MemDataInMuxSel = 0;
 				ALU2 = 4; // IMM3
 				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
@@ -62,12 +65,14 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
 			c3_ori:
 				begin
 				MemAdrMuxSel = 0;
+				MemDataInMuxSel = 0;
 				ALU2 = 3; // imm5
 				if(IR4Out[7:6]==1 && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
 				end
 			c3_load:
 				begin
+				MemDataInMuxSel = 0;
 				ALU1 = 2; // don't care
 				ALU2 = 3'b000; // don't care
 				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite == 1) MemAdrMuxSel = 1;
@@ -75,12 +80,14 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
 				end
 			c3_bpz:
 				begin
+				MemDataInMuxSel = 0;
 				MemAdrMuxSel = 0;
 				ALU1 = 1; // PC4 wire
 				ALU2 = 2; // IMM4
 				end
 			c3_bz:
 				begin
+				MemDataInMuxSel = 0;
 				MemAdrMuxSel = 0;
 				ALU1 = 1; // PC4 wire
 				ALU2 = 2; // IMM4
@@ -90,6 +97,15 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
 				MemAdrMuxSel = 0;
 				ALU1 = 1; // PC4 wire
 				ALU2 = 2; // IMM4
+				end
+			c3_store:
+				begin
+				ALU1 = 2; // don't care
+				ALU2 = 0; // don't care
+				if(IR4Out[7:6] == IR3Out[7:6] && RFWrite == 1) MemDataInMuxSel = 1;
+				else MemDataInMuxSel = 0;
+				if(IR4Out[7:6] == IR3Out[5:4] && RFWrite == 1) MemAdrMuxSel = 1;
+				else MemAdrMuxSel = 0;
 				end
 			default:
 				begin
