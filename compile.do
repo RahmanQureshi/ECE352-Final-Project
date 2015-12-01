@@ -19,3 +19,4 @@ vlog -vlog01compat -work work DecodeController.v
 vlog -vlog01compat -work work RFController.v
 vlog -vlog01compat -work work WriteBackController.v
 vlog -vlog01compat -work work ExecuteController.v
+vlog -vlog01compat -work work BranchingFSM.v

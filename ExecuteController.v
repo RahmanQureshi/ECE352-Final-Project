@@ -94,6 +94,7 @@ MemAdrMuxSel, MemDataInMuxSel
 				end
 			c3_bnz:
 				begin
+				MemDataInMuxSel = 0;
 				MemAdrMuxSel = 0;
 				ALU1 = 1; // PC4 wire
 				ALU2 = 2; // IMM4
@@ -109,6 +110,7 @@ MemAdrMuxSel, MemDataInMuxSel
 				end
 			default:
 				begin
+				MemDataInMuxSel = 0;
 				MemAdrMuxSel = 0;
 				ALU1 = 2;
 				ALU2 = 3'b000;

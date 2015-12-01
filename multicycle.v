@@ -71,7 +71,7 @@ wire [7:0] MemAdrMuxOut;
 wire MemAdrMuxSel;
 wire [7:0] MemDataInMuxOut;
 wire MemDataInMuxSel;
-
+wire branching;
 
 wire OutputSel;
 
@@ -148,6 +148,9 @@ WriteBackController WBC(
 	.FlagWrite(),.ALU2(),.ALUop(),.CounterEnable()
 );
 
+BranchingFSM BFSM (
+	.clock(clock),.reset(reset),.PCSel(PCSel),.branching(branching)
+);
 
 counter ClockCounter (
 	.enable(CounterEnable),.reset(reset),.clock(clock),.q(COUNTERwire)
