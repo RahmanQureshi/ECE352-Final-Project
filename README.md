@@ -9,3 +9,6 @@ After the RFC was written, the data output from memory was connected to a multip
 ## Instruction 8b00000000
 The 0 instruction gets loaded at the beginning (first 5 cycles) and end of program. This is load r0,(r0), which gets executed and is the reason why r0 changes.
 r0 moves around because each time it loads from itself, into itself, a new value.
+
+## Known Issues
+In modelsim, branches work, but on the DE1 board, branches branch the instruction after the instruction it is supposed to branch to.

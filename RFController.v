@@ -82,7 +82,7 @@ R1MuxSel, R2MuxSel
 			c3_load:
 				begin
 				// if(IR2Out[7:6] == 1 && branching==0) R1MuxSel = 0;
-				if(IR2Out[7:6] == IR4Out[7:6] && branching==0) R1MuxSel = 0;
+				if(IR2Out[7:6] == IR4Out[7:6] && branching==0) R1MuxSel = 1;
 				else R1MuxSel = 2;
 				if(IR2Out[5:4] == IR4Out[7:6] && branching==0) R2MuxSel = 1; // MDR Output
 				else R2MuxSel = 2;
