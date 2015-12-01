@@ -5,7 +5,7 @@ N, Z,
 PCwrite, AddrSel, MemRead, PCSel,
 MemWrite, IRload, R1Sel, MDRload,
 R1R2Load, ALU1, ALU2, ALUop,
-ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
+ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel, MemAdrMuxSel
 );
 
 	input	N, Z;
@@ -16,7 +16,7 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 	output	R1R2Load, ALUOutWrite, RegIn, FlagWrite;
 	output  CounterEnable;
 	output	[2:0] ALU1, ALU2, ALUop;
-	output reg OutputSel;
+	output reg OutputSel, MemAdrMuxSel;
 	//output	[3:0] state;
 	
 	reg 	PCSel;
@@ -25,8 +25,6 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 	reg	[2:0] ALU1, ALU2, ALUop;
 	reg [3:0] state;
 	reg [3:0] instr;
-	reg [3:0] state2; // IR4 - WriteBack
-	reg [3:0] instr2;
 
 /*****************************************************************************
  *                         Parameter Declarations                            *
@@ -42,31 +40,13 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
  *                         Combination Logic  - Data Hazard                  *
  *****************************************************************************/	
 
- 	always@(*)
-	begin
-		instr2 = IR4Out[3:0];
-	end
- 
-	always@(*)
-	begin	
-		if(instr2 == 4'b0100 | instr2 == 4'b0110 | instr2 == 4'b1000) state2 = c3_asn;
-		else if( instr2[2:0] == 3'b011 ) state2 = c3_shift;
-		else if( instr2[2:0] == 3'b111 ) state2 = c3_ori;
-		else if( instr2 == 4'b0000 ) state2 = c3_load;
-		else if( instr2 == 4'b0010 ) state2 = c3_store;
-		else if( instr2 == 4'b1101 ) state2 = c3_bpz;
-		else if( instr2 == 4'b0101 ) state2 = c3_bz;
-		else if( instr2 == 4'b1001 ) state2 = c3_bnz;
-		else if( instr2 == 4'b1010 ) state2 = c1; // nop
-		else if( instr2 == 4'b0001 ) state2 = stop;
-		else state2 = 0;
-	end
 	
 	always @(*)
 	begin
 		case(state)
 			c3_asn:
 				begin
+				MemAdrMuxSel = 0;
 				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
 				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite == 1) ALU2 = 3'b001;
@@ -74,12 +54,14 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 				end
 			c3_shift: // R2 unused
 				begin
+				MemAdrMuxSel = 0;
 				ALU2 = 4; // IMM3
 				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
 				end
 			c3_ori:
 				begin
+				MemAdrMuxSel = 0;
 				ALU2 = 3; // imm5
 				if(IR4Out[7:6]==1 && RFWrite == 1) ALU1 = 0;
 				else ALU1 = 2;
@@ -87,26 +69,31 @@ ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable, OutputSel// state
 			c3_load:
 				begin
 				ALU1 = 2; // don't care
-				if(IR4Out[7:6]==IR3Out[7:6] && RFWrite == 1) ALU2 = 3'b001;
-				else ALU2 = 3'b000;
+				ALU2 = 3'b000; // don't care
+				if(IR4Out[7:6]==IR3Out[5:4] && RFWrite == 1) MemAdrMuxSel = 1;
+				else MemAdrMuxSel = 0;
 				end
 			c3_bpz:
 				begin
+				MemAdrMuxSel = 0;
 				ALU1 = 1; // PC4 wire
 				ALU2 = 2; // IMM4
 				end
 			c3_bz:
 				begin
+				MemAdrMuxSel = 0;
 				ALU1 = 1; // PC4 wire
 				ALU2 = 2; // IMM4
 				end
 			c3_bnz:
 				begin
+				MemAdrMuxSel = 0;
 				ALU1 = 1; // PC4 wire
 				ALU2 = 2; // IMM4
 				end
 			default:
 				begin
+				MemAdrMuxSel = 0;
 				ALU1 = 2;
 				ALU2 = 3'b000;
 				end

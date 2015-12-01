@@ -5,7 +5,7 @@ N, Z,
 PCwrite, AddrSel, MemRead, PCSel,
 MemWrite, IRload, R1Sel, MDRload,
 R1R2Load, ALU1, ALU2, ALUop,
-ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable// state
+ALUOutWrite, RFWrite, RegIn, FlagWrite, CounterEnable
 );
 
 
