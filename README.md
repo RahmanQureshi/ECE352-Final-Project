@@ -1,3 +1,7 @@
+# ECE352 Final Project
+
+The final project of ECE352 Computer Organization in which we modified a working processor to include pipelining.
+
 ## Register File Controller
 
 The register file controller bypasses by looking at the specific instruction in IR4 and multiplexing between the ALUOut register (if IR4 was an add, sub, nand, etc) and the MDR register(for loads)
